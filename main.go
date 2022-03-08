@@ -2,7 +2,7 @@ package main
 
 import (
 	"flag"
-	"os"
+	"fmt"
 )
 
 func main() {
@@ -10,6 +10,6 @@ func main() {
 	flag.Parse()
 	pages := crawl(*urlFlag)
 	for _, p := range pages {
-		printPage(p, os.Stdout)
+		fmt.Printf("%v", p)
 	}
 }

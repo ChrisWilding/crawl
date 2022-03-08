@@ -1,8 +1,8 @@
 package main
 
 import (
+	"bytes"
 	"fmt"
-	"io"
 	"log"
 	"net/http"
 	"strings"
@@ -15,6 +15,16 @@ import (
 type page struct {
 	url   string
 	links []string
+}
+
+func (p page) String() string {
+	b := new(bytes.Buffer)
+	fmt.Fprintf(b, "Page: %s\n", p.url)
+	for _, l := range p.links {
+		fmt.Fprintln(b, l)
+	}
+	fmt.Fprintln(b)
+	return b.String()
 }
 
 func get(url string) page {
@@ -36,24 +46,15 @@ func get(url string) page {
 }
 
 // filter returns a slice of all http(s) and relative links
-// having filtered and removed any mailto, tel, app links or fragments
+// having filtered and removed any mailto, tel, app links, fragments
+// or links on other domains
 func filter(links []string, url string) []string {
 	var filtered []string
 	for _, l := range links {
 		switch {
 		case strings.HasPrefix(l, "/"):
 			filtered = append(filtered, url+l)
-		case strings.HasPrefix(l, "http"):
-			filtered = append(filtered, l)
-		}
-	}
-	return filtered
-}
-
-func filterSameDomain(links []string, url string) []string {
-	var filtered []string
-	for _, l := range links {
-		if strings.HasPrefix(l, url) {
+		case strings.HasPrefix(l, "http") && strings.HasPrefix(l, url):
 			filtered = append(filtered, l)
 		}
 	}
@@ -96,7 +97,6 @@ func crawl(url string) []page {
 			mu.Lock()
 			pages = append(pages, page)
 			links := filter(page.links, url)
-			links = filterSameDomain(links, url)
 			for _, link := range links {
 				next[link] = struct{}{}
 			}
@@ -112,12 +112,4 @@ func crawl(url string) []page {
 	}
 
 	return pages
-}
-
-func printPage(p page, w io.Writer) {
-	fmt.Fprintf(w, "Page: %s\n", p.url)
-	for _, l := range p.links {
-		fmt.Fprintln(w, l)
-	}
-	fmt.Fprintln(w)
 }

@@ -5,7 +5,6 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"reflect"
-	"strings"
 	"sync/atomic"
 	"testing"
 
@@ -61,6 +60,7 @@ func TestFilter(t *testing.T) {
 		"#fragment",
 		"tel:0700000000",
 		"app://www.example.com",
+		"https://subdomain.example.com/world",
 	}
 
 	expected := []string{
@@ -73,24 +73,6 @@ func TestFilter(t *testing.T) {
 	assert.ElementsMatch(t, actual, expected)
 }
 
-func TestFilterSameDomain(t *testing.T) {
-	links := []string{
-		"https://www.example.com/hello",
-		"https://subdomain.example.com/world",
-		"https://www.example.com/world",
-		"https://www.another-example.com/world",
-	}
-
-	expected := []string{
-		"https://www.example.com/hello",
-		"https://www.example.com/world",
-	}
-
-	actual := filterSameDomain(links, "https://www.example.com")
-
-	assert.ElementsMatch(t, actual, expected)
-}
-
 func TestPrintPage(t *testing.T) {
 	p := page{
 		url: "https://www.example.com",
@@ -99,9 +81,8 @@ func TestPrintPage(t *testing.T) {
 			"https://www.example.com/world",
 		},
 	}
-	var s strings.Builder
-	printPage(p, &s)
-	assert.Equal(t, s.String(), `Page: https://www.example.com
+
+	assert.Equal(t, p.String(), `Page: https://www.example.com
 https://www.example.com/hello
 https://www.example.com/world
 
