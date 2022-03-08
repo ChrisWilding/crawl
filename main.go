@@ -1,7 +1,11 @@
 package main
 
-import "fmt"
+import (
+	"flag"
+)
 
 func main() {
-	fmt.Println("Hello, World!")
+	urlFlag := flag.String("url", "https://www.example.com", "the url to crawl")
+	flag.Parse()
+	crawl(*urlFlag)
 }
