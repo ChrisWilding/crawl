@@ -31,6 +31,8 @@ $ go test -v ./...
 $ go build .
 $ ./crawl --help
 Usage of ./crawl:
+  -limit int
+        limit to the number of levels of links to follow (default 100)
   -url string
         the url to crawl (default "https://www.example.com")
 ```
@@ -41,6 +43,8 @@ Usage of ./crawl:
 $ docker pull ghcr.io/chriswilding/crawl:latest
 $ docker run --rm -ti ghcr.io/chriswilding/crawl:latest --help
 Usage of /ko-app/crawl:
+  -limit int
+        limit to the number of levels of links to follow (default 100)
   -url string
         the url to crawl (default "https://www.example.com")
 ```
