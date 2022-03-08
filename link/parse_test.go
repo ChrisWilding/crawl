@@ -1,4 +1,4 @@
-package main
+package link
 
 import (
 	"strings"
@@ -34,7 +34,34 @@ func TestParse(t *testing.T) {
 	}
 
 	reader := strings.NewReader(exampleHTML)
-	actual, err := parse(reader)
+	actual, err := Parse(reader)
+
+	assert.Nil(t, err)
+	assert.ElementsMatch(t, actual, expected)
+}
+
+var exampleHTMLWithEmptyHref = `
+<!doctype html>
+<html>
+<head>
+    <title>Example Domain</title>
+</head>
+<body>
+<div>
+<a href="https://www.iana.org/domains/example">More information...</a>
+<a>And even more information...</a>
+</div>
+</body>
+</html>
+`
+
+func TestParseEmptyHref(t *testing.T) {
+	expected := []string{
+		"https://www.iana.org/domains/example",
+	}
+
+	reader := strings.NewReader(exampleHTMLWithEmptyHref)
+	actual, err := Parse(reader)
 
 	assert.Nil(t, err)
 	assert.ElementsMatch(t, actual, expected)
