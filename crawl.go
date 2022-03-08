@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"strings"
 	"sync"
+	"time"
 
 	"github.com/ChrisWilding/crawl/link"
 )
@@ -17,7 +18,10 @@ type page struct {
 }
 
 func get(url string) page {
-	resp, err := http.Get(url)
+	client := http.Client{
+		Timeout: 15 * time.Second,
+	}
+	resp, err := client.Get(url)
 	if err != nil {
 		log.Fatal(err)
 	}
