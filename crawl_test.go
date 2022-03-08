@@ -4,15 +4,11 @@ import (
 	"fmt"
 	"net/http"
 	"net/http/httptest"
+	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
 )
-
-func TestCrawl(t *testing.T) {
-	crawl("")
-	// TODO
-}
 
 var exampleHTMLWith3Links = `
 <!doctype html>
@@ -91,4 +87,21 @@ func TestFilterSameDomain(t *testing.T) {
 	actual := filterSameDomain(links, "https://www.example.com")
 
 	assert.ElementsMatch(t, actual, expected)
+}
+
+func TestPrintPage(t *testing.T) {
+	p := page{
+		url: "https://www.example.com",
+		links: []string{
+			"https://www.example.com/hello",
+			"https://www.example.com/world",
+		},
+	}
+	var s strings.Builder
+	printPage(p, &s)
+	assert.Equal(t, s.String(), `Page: https://www.example.com
+https://www.example.com/hello
+https://www.example.com/world
+
+`)
 }
