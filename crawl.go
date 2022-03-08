@@ -61,6 +61,8 @@ func filterIsSameDomain(links []string, url string) []string {
 	return filtered
 }
 
+// filterIsUnseen returns a slice of the unseen links from links
+// and adds any unseen links to seen
 func filterIsUnseen(links map[string]struct{}, seen map[string]struct{}) []string {
 	var unseen []string
 	for link := range links {
@@ -88,16 +90,14 @@ func crawl(url string, limit int) []page {
 		c := make(chan page, len(queue))
 		for _, url := range queue {
 			go func(url string) {
-				page := get(url)
-				c <- page
+				c <- get(url)
 			}(url)
 		}
 		for i := 0; i < len(queue); i++ {
 			page := <-c
 			mu.Lock()
 			pages = append(pages, page)
-			links := filterIsSameDomain(page.links, url)
-			for _, link := range links {
+			for _, link := range filterIsSameDomain(page.links, url) {
 				next[link] = struct{}{}
 			}
 			mu.Unlock()
