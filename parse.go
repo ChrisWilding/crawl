@@ -11,23 +11,26 @@ func parse(r io.Reader) ([]string, error) {
 	if err != nil {
 		return nil, err
 	}
+	links := extractLinks(doc)
+	return links, nil
+}
 
+func extractLinks(n *html.Node) []string {
+	if n.Type == html.ElementNode && n.Data == "a" {
+		return []string{extractHrefAttr(n)}
+	}
 	var hrefs []string
+	for c := n.FirstChild; c != nil; c = c.NextSibling {
+		hrefs = append(hrefs, extractLinks(c)...)
+	}
+	return hrefs
+}
 
-	var f func(*html.Node)
-	f = func(n *html.Node) {
-		if n.Type == html.ElementNode && n.Data == "a" {
-			for _, attr := range n.Attr {
-				if attr.Key == "href" {
-					hrefs = append(hrefs, attr.Val)
-				}
-			}
-		}
-		for c := n.FirstChild; c != nil; c = c.NextSibling {
-			f(c)
+func extractHrefAttr(n *html.Node) string {
+	for _, attr := range n.Attr {
+		if attr.Key == "href" {
+			return attr.Val
 		}
 	}
-	f(doc)
-
-	return hrefs, nil
+	return ""
 }
