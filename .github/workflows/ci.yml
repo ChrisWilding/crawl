@@ -31,9 +31,15 @@ jobs:
         if: github.ref == 'refs/heads/main' && github.event_name == 'push'
         run: go install github.com/google/ko@latest
 
-      - name: Build and Push with Ko
+      - name: Login with Ko
         if: github.ref == 'refs/heads/main' && github.event_name == 'push'
-        run: ko build . --bare
+        run: ko login "ghcr.io" --username="chriswilding" --password="$GITHUB_TOKEN"
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          KO_DOCKER_REPO: "ghcr.io/ChrisWilding/crawl:latest"
+
+      - name: Build and Push with Ko
+        if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+        run: ko publish . --bare
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          KO_DOCKER_REPO: "ghcr.io/chriswilding/crawl:latest"
