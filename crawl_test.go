@@ -52,7 +52,7 @@ func TestGet(t *testing.T) {
 	assert.ElementsMatch(t, page.links, expectedLinks)
 }
 
-func TestFilter(t *testing.T) {
+func TestFilterIsSameDomain(t *testing.T) {
 	links := []string{
 		"/hello",
 		"mailto:example@example.com",
@@ -68,9 +68,27 @@ func TestFilter(t *testing.T) {
 		"https://www.example.com/world",
 	}
 
-	actual := filter(links, "https://www.example.com")
+	actual := filterIsSameDomain(links, "https://www.example.com")
 
 	assert.ElementsMatch(t, actual, expected)
+}
+
+func TestFilterIsUnseen(t *testing.T) {
+	links := map[string]struct{}{
+		"a": {},
+		"b": {},
+		"c": {},
+	}
+	seen := map[string]struct{}{
+		"b": {},
+	}
+	actual := filterIsUnseen(links, seen)
+	assert.ElementsMatch(t, actual, []string{"a", "c"})
+	assert.True(t, reflect.DeepEqual(seen, map[string]struct{}{
+		"a": {},
+		"b": {},
+		"c": {},
+	}))
 }
 
 func TestPrintPage(t *testing.T) {
@@ -87,24 +105,6 @@ https://www.example.com/hello
 https://www.example.com/world
 
 `)
-}
-
-func TestFilterSeen(t *testing.T) {
-	links := map[string]struct{}{
-		"a": {},
-		"b": {},
-		"c": {},
-	}
-	seen := map[string]struct{}{
-		"b": {},
-	}
-	actual := filterSeen(links, seen)
-	assert.ElementsMatch(t, actual, []string{"a", "c"})
-	assert.True(t, reflect.DeepEqual(seen, map[string]struct{}{
-		"a": {},
-		"b": {},
-		"c": {},
-	}))
 }
 
 var page1 = `
