@@ -47,6 +47,7 @@ func TestGet(t *testing.T) {
 
 	page := get(svr.URL)
 
+	assert.Equal(t, svr.URL, page.url)
 	assert.ElementsMatch(t, page.links, expectedLinks)
 }
 
