@@ -28,14 +28,19 @@ $ go test -v ./...
 ### Run
 
 ```
-$ go run main.go
-Hello, World!
+$ go build .
+$ ./crawl --help
+Usage of ./crawl:
+  -url string
+        the url to crawl (default "https://www.example.com")
 ```
 
 ### Run with Docker
 
 ```sh
 $ docker pull ghcr.io/chriswilding/crawl:latest
-$ docker run --rm -ti ghcr.io/chriswilding/crawl:latest
-Hello, World!
+$ docker run --rm -ti ghcr.io/chriswilding/crawl:latest --help
+Usage of /ko-app/crawl:
+  -url string
+        the url to crawl (default "https://www.example.com")
 ```
