@@ -45,10 +45,10 @@ func get(url string) page {
 	}
 }
 
-// filter returns a slice of all http(s) and relative links
+// filterIsSameDomain returns a slice of all http(s) and relative links
 // having filtered and removed any mailto, tel, app links, fragments
 // or links on other domains
-func filter(links []string, url string) []string {
+func filterIsSameDomain(links []string, url string) []string {
 	var filtered []string
 	for _, l := range links {
 		switch {
@@ -61,16 +61,16 @@ func filter(links []string, url string) []string {
 	return filtered
 }
 
-func filterSeen(links map[string]struct{}, seen map[string]struct{}) []string {
-	var queue []string
+func filterIsUnseen(links map[string]struct{}, seen map[string]struct{}) []string {
+	var unseen []string
 	for link := range links {
 		if _, ok := seen[link]; ok {
 			continue
 		}
 		seen[link] = struct{}{}
-		queue = append(queue, link)
+		unseen = append(unseen, link)
 	}
-	return queue
+	return unseen
 }
 
 func crawl(url string) []page {
@@ -83,7 +83,7 @@ func crawl(url string) []page {
 	next := make(map[string]struct{})
 
 	for {
-		queue := filterSeen(todo, seen)
+		queue := filterIsUnseen(todo, seen)
 
 		c := make(chan page, len(queue))
 		for _, url := range queue {
@@ -96,7 +96,7 @@ func crawl(url string) []page {
 			page := <-c
 			mu.Lock()
 			pages = append(pages, page)
-			links := filter(page.links, url)
+			links := filterIsSameDomain(page.links, url)
 			for _, link := range links {
 				next[link] = struct{}{}
 			}
