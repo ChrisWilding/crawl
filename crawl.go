@@ -6,6 +6,7 @@ import (
 	"log"
 	"net/http"
 	"strings"
+	"sync"
 )
 
 type page struct {
@@ -55,6 +56,7 @@ func filterSameDomain(links []string, url string) []string {
 
 func crawl(url string) []page {
 	var pages []page
+	var mu sync.Mutex
 
 	seen := make(map[string]struct{})
 	todo := make(map[string]struct{})
@@ -62,21 +64,34 @@ func crawl(url string) []page {
 	next := make(map[string]struct{})
 
 	for {
+		var queue []string
 		for url := range todo {
 			if _, ok := seen[url]; ok {
 				continue
 			}
 			seen[url] = struct{}{}
-			page := get(url)
-			pages = append(pages, page)
+			queue = append(queue, url)
+		}
 
+		c := make(chan page, len(queue))
+		for _, url := range queue {
+			go func(url string) {
+				page := get(url)
+				c <- page
+			}(url)
+		}
+		for i := 0; i < len(queue); i++ {
+			page := <-c
+			mu.Lock()
+			pages = append(pages, page)
 			links := filter(page.links, url)
 			links = filterSameDomain(links, url)
-
 			for _, link := range links {
 				next[link] = struct{}{}
 			}
+			mu.Unlock()
 		}
+
 		todo = next
 		next = make(map[string]struct{})
 
