@@ -1,6 +1,8 @@
 package main
 
 import (
+	"fmt"
+	"io"
 	"log"
 	"net/http"
 	"strings"
@@ -51,13 +53,45 @@ func filterSameDomain(links []string, url string) []string {
 	return filtered
 }
 
-func crawl(url string) {
-	// GET the page
-	// Parse the HTML and extract the links
-	// Print the URL
-	// Print each of the links
-	// Filter the links so that the slice only contains links on the same domain
-	// If not already visited
-	//   Crawl the link
-	//   Mark as visited
+func crawl(url string) []page {
+	var pages []page
+
+	seen := make(map[string]struct{})
+	todo := make(map[string]struct{})
+	todo[url] = struct{}{}
+	next := make(map[string]struct{})
+
+	for {
+		for url := range todo {
+			if _, ok := seen[url]; ok {
+				continue
+			}
+			seen[url] = struct{}{}
+			page := get(url)
+			pages = append(pages, page)
+
+			links := filter(page.links, url)
+			links = filterSameDomain(links, url)
+
+			for _, link := range links {
+				next[link] = struct{}{}
+			}
+		}
+		todo = next
+		next = make(map[string]struct{})
+
+		if len(todo) == 0 {
+			break
+		}
+	}
+
+	return pages
+}
+
+func printPage(p page, w io.Writer) {
+	fmt.Fprintf(w, "Page: %s\n", p.url)
+	for _, l := range p.links {
+		fmt.Fprintln(w, l)
+	}
+	fmt.Fprintln(w)
 }
