@@ -1,5 +1,7 @@
 package main
 
-func TestCrawl() {
+import "testing"
+
+func TestCrawl(t *testing.T) {
 	// TODO
 }
