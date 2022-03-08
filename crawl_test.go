@@ -161,10 +161,10 @@ var page3 = `
 </html>
 `
 
-func TestCrawl(t *testing.T) {
-	var calls uint64
+func buildTestServer(t *testing.T) (*httptest.Server, *uint64) {
+	calls := new(uint64)
 	svr := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		atomic.AddUint64(&calls, 1)
+		atomic.AddUint64(calls, 1)
 		switch r.URL.Path {
 		case "/":
 			fmt.Fprint(w, page1)
@@ -176,10 +176,23 @@ func TestCrawl(t *testing.T) {
 			t.FailNow()
 		}
 	}))
-	defer svr.Close()
+	return svr, calls
+}
 
-	pages := crawl(svr.URL)
+func TestCrawl(t *testing.T) {
+	svr, calls := buildTestServer(t)
+	defer svr.Close()
+	pages := crawl(svr.URL, 50)
 
 	assert.Equal(t, 3, len(pages))
-	assert.Equal(t, uint64(3), calls)
+	assert.Equal(t, uint64(3), *calls)
+}
+
+func TestCrawlWithLowLimit(t *testing.T) {
+	svr, calls := buildTestServer(t)
+	defer svr.Close()
+	pages := crawl(svr.URL, 1)
+
+	assert.Equal(t, 1, len(pages))
+	assert.Equal(t, uint64(1), *calls)
 }

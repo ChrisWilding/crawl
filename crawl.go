@@ -73,7 +73,7 @@ func filterIsUnseen(links map[string]struct{}, seen map[string]struct{}) []strin
 	return unseen
 }
 
-func crawl(url string) []page {
+func crawl(url string, limit int) []page {
 	var pages []page
 	var mu sync.Mutex
 
@@ -82,7 +82,7 @@ func crawl(url string) []page {
 	todo[url+"/"] = struct{}{}
 	next := make(map[string]struct{})
 
-	for {
+	for i := 0; i < limit; i++ {
 		queue := filterIsUnseen(todo, seen)
 
 		c := make(chan page, len(queue))
