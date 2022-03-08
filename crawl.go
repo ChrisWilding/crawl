@@ -54,6 +54,18 @@ func filterSameDomain(links []string, url string) []string {
 	return filtered
 }
 
+func filterSeen(links map[string]struct{}, seen map[string]struct{}) []string {
+	var queue []string
+	for link := range links {
+		if _, ok := seen[link]; ok {
+			continue
+		}
+		seen[link] = struct{}{}
+		queue = append(queue, link)
+	}
+	return queue
+}
+
 func crawl(url string) []page {
 	var pages []page
 	var mu sync.Mutex
@@ -64,14 +76,7 @@ func crawl(url string) []page {
 	next := make(map[string]struct{})
 
 	for {
-		var queue []string
-		for url := range todo {
-			if _, ok := seen[url]; ok {
-				continue
-			}
-			seen[url] = struct{}{}
-			queue = append(queue, url)
-		}
+		queue := filterSeen(todo, seen)
 
 		c := make(chan page, len(queue))
 		for _, url := range queue {

@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"net/http"
 	"net/http/httptest"
+	"reflect"
 	"strings"
 	"testing"
 
@@ -104,4 +105,22 @@ https://www.example.com/hello
 https://www.example.com/world
 
 `)
+}
+
+func TestFilterSeen(t *testing.T) {
+	links := map[string]struct{}{
+		"a": {},
+		"b": {},
+		"c": {},
+	}
+	seen := map[string]struct{}{
+		"b": {},
+	}
+	actual := filterSeen(links, seen)
+	assert.ElementsMatch(t, actual, []string{"a", "c"})
+	assert.True(t, reflect.DeepEqual(seen, map[string]struct{}{
+		"a": {},
+		"b": {},
+		"c": {},
+	}))
 }
