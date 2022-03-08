@@ -7,6 +7,8 @@ import (
 	"net/http"
 	"strings"
 	"sync"
+
+	"github.com/ChrisWilding/crawl/link"
 )
 
 type page struct {
@@ -21,7 +23,7 @@ func get(url string) page {
 	}
 	defer resp.Body.Close()
 
-	links, _ := parse(resp.Body)
+	links, _ := link.Parse(resp.Body)
 
 	return page{
 		url:   url,
