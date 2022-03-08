@@ -33,11 +33,14 @@ func get(url string) page {
 	}
 	resp, err := client.Get(url)
 	if err != nil {
-		log.Fatal(err)
+		log.Printf("An error occured getting %s, error was %v\n", url, err)
 	}
 	defer resp.Body.Close()
 
-	links, _ := link.Parse(resp.Body)
+	links, err := link.Parse(resp.Body)
+	if err != nil {
+		log.Printf("An error occured parsing HTML for URL %s, error was %v\n", url, err)
+	}
 
 	return page{
 		url:   url,
