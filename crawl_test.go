@@ -53,3 +53,41 @@ func TestGet(t *testing.T) {
 
 	assert.ElementsMatch(t, actual, expected)
 }
+
+func TestFilter(t *testing.T) {
+	links := []string{
+		"/hello",
+		"mailto:example@example.com",
+		"https://www.example.com/world",
+		"#fragment",
+		"tel:0700000000",
+		"app://www.example.com",
+	}
+
+	expected := []string{
+		"https://www.example.com/hello",
+		"https://www.example.com/world",
+	}
+
+	actual := filter(links, "https://www.example.com")
+
+	assert.ElementsMatch(t, actual, expected)
+}
+
+func TestFilterSameDomain(t *testing.T) {
+	links := []string{
+		"https://www.example.com/hello",
+		"https://subdomain.example.com/world",
+		"https://www.example.com/world",
+		"https://www.another-example.com/world",
+	}
+
+	expected := []string{
+		"https://www.example.com/hello",
+		"https://www.example.com/world",
+	}
+
+	actual := filterSameDomain(links, "https://www.example.com")
+
+	assert.ElementsMatch(t, actual, expected)
+}

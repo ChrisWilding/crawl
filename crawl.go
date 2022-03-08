@@ -3,6 +3,7 @@ package main
 import (
 	"log"
 	"net/http"
+	"strings"
 )
 
 func get(url string) []string {
@@ -14,6 +15,31 @@ func get(url string) []string {
 
 	links, _ := parse(resp.Body)
 	return links
+}
+
+// filter returns a slice of all http(s) and relative links
+// having filtered and removed any mailto, tel, app links or fragments
+func filter(links []string, url string) []string {
+	var filtered []string
+	for _, l := range links {
+		switch {
+		case strings.HasPrefix(l, "/"):
+			filtered = append(filtered, url+l)
+		case strings.HasPrefix(l, "http"):
+			filtered = append(filtered, l)
+		}
+	}
+	return filtered
+}
+
+func filterSameDomain(links []string, url string) []string {
+	var filtered []string
+	for _, l := range links {
+		if strings.HasPrefix(l, url) {
+			filtered = append(filtered, l)
+		}
+	}
+	return filtered
 }
 
 func crawl(url string) {
