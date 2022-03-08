@@ -6,6 +6,7 @@ import (
 	"net/http/httptest"
 	"reflect"
 	"strings"
+	"sync/atomic"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -123,4 +124,81 @@ func TestFilterSeen(t *testing.T) {
 		"b": {},
 		"c": {},
 	}))
+}
+
+var page1 = `
+<!doctype html>
+<html>
+<head>
+    <title>Example Domain</title>
+    <meta charset="utf-8" />
+    <meta http-equiv="Content-type" content="text/html; charset=utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+</head>
+<body>
+<div>
+	<a href="/page/two">P2</a>
+	<a href="/page/three">P3</a>
+</div>
+</body>
+</html>
+`
+
+var page2 = `
+<!doctype html>
+<html>
+<head>
+    <title>Example Domain</title>
+    <meta charset="utf-8" />
+    <meta http-equiv="Content-type" content="text/html; charset=utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+</head>
+<body>
+<div>
+	<a href="/">P1</a>
+	<a href="/page/three">P3</a>
+</div>
+</body>
+</html>
+`
+
+var page3 = `
+<!doctype html>
+<html>
+<head>
+    <title>Example Domain</title>
+    <meta charset="utf-8" />
+    <meta http-equiv="Content-type" content="text/html; charset=utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+</head>
+<body>
+<div>
+	<a href="/page/two">P2</a>
+	<a href="/">P1</a>
+</div>
+</body>
+</html>
+`
+
+func TestCrawl(t *testing.T) {
+	var calls uint64
+	svr := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		atomic.AddUint64(&calls, 1)
+		switch r.URL.Path {
+		case "/":
+			fmt.Fprint(w, page1)
+		case "/page/two":
+			fmt.Fprint(w, page2)
+		case "/page/three":
+			fmt.Fprint(w, page3)
+		default:
+			t.FailNow()
+		}
+	}))
+	defer svr.Close()
+
+	pages := crawl(svr.URL)
+
+	assert.Equal(t, 3, len(pages))
+	assert.Equal(t, uint64(3), calls)
 }

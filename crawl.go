@@ -78,7 +78,7 @@ func crawl(url string) []page {
 
 	seen := make(map[string]struct{})
 	todo := make(map[string]struct{})
-	todo[url] = struct{}{}
+	todo[url+"/"] = struct{}{}
 	next := make(map[string]struct{})
 
 	for {
