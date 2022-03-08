@@ -6,7 +6,12 @@ import (
 	"strings"
 )
 
-func get(url string) []string {
+type page struct {
+	url   string
+	links []string
+}
+
+func get(url string) page {
 	resp, err := http.Get(url)
 	if err != nil {
 		log.Fatal(err)
@@ -14,7 +19,11 @@ func get(url string) []string {
 	defer resp.Body.Close()
 
 	links, _ := parse(resp.Body)
-	return links
+
+	return page{
+		url:   url,
+		links: links,
+	}
 }
 
 // filter returns a slice of all http(s) and relative links

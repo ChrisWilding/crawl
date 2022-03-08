@@ -38,7 +38,7 @@ var exampleHTMLWith3Links = `
 `
 
 func TestGet(t *testing.T) {
-	expected := []string{
+	expectedLinks := []string{
 		"https://www.iana.org/domains/example",
 		"/domains/example",
 		"mailto:example@example.com",
@@ -49,9 +49,10 @@ func TestGet(t *testing.T) {
 	}))
 	defer svr.Close()
 
-	actual := get(svr.URL)
+	page := get(svr.URL)
 
-	assert.ElementsMatch(t, actual, expected)
+	assert.Equal(t, svr.URL, page.url)
+	assert.ElementsMatch(t, page.links, expectedLinks)
 }
 
 func TestFilter(t *testing.T) {
