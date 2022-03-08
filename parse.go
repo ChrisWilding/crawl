@@ -17,11 +17,7 @@ func parse(r io.Reader) ([]string, error) {
 	var f func(*html.Node)
 	f = func(n *html.Node) {
 		if n.Type == html.ElementNode && n.Data == "a" {
-			for _, attr := range n.Attr {
-				if attr.Key == "href" {
-					hrefs = append(hrefs, attr.Val)
-				}
-			}
+			hrefs = append(hrefs, extractHref(n))
 		}
 		for c := n.FirstChild; c != nil; c = c.NextSibling {
 			f(c)
@@ -30,4 +26,13 @@ func parse(r io.Reader) ([]string, error) {
 	f(doc)
 
 	return hrefs, nil
+}
+
+func extractHref(n *html.Node) string {
+	for _, attr := range n.Attr {
+		if attr.Key == "href" {
+			return attr.Val
+		}
+	}
+	return ""
 }
