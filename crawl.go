@@ -6,7 +6,6 @@ import (
 	"log"
 	"net/http"
 	"strings"
-	"sync"
 	"time"
 
 	"github.com/ChrisWilding/crawl/link"
@@ -80,7 +79,6 @@ func filterIsUnseen(links map[string]struct{}, seen map[string]struct{}) []strin
 
 func crawl(url string, limit int) []page {
 	var pages []page
-	var mu sync.Mutex
 
 	seen := make(map[string]struct{})
 	todo := make(map[string]struct{})
@@ -98,12 +96,10 @@ func crawl(url string, limit int) []page {
 		}
 		for i := 0; i < len(queue); i++ {
 			page := <-c
-			mu.Lock()
 			pages = append(pages, page)
 			for _, link := range filterIsSameDomain(page.links, url) {
 				next[link] = struct{}{}
 			}
-			mu.Unlock()
 		}
 
 		todo = next
